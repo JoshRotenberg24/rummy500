@@ -603,19 +603,17 @@ body.shake{animation:shake .28s var(--ease-out)}
 }
 .ptitle{font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:2px;text-align:center}
 .psub{font-style:italic;color:var(--text-muted);font-size:.7rem;text-align:center;margin-bottom:14px;line-height:1.6}
-.picker-pile{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:360px;max-height:56vh;overflow-y:auto}
+.picker-pile{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:360px;max-height:50vh;overflow-y:auto}
 .picker-card-wrap{
   display:flex;flex-direction:column;align-items:center;gap:3px;
   cursor:pointer;transition:transform .16s var(--spring)
 }
-.picker-card-wrap:hover{transform:translateY(-3px)}
 .picker-card-wrap:active{transform:scale(.95)}
-.picker-card-wrap .take-label{
-  font-size:.5rem;color:var(--hit);letter-spacing:1px;
-  opacity:0;transition:opacity .15s;font-family:'Playfair Display',serif;font-weight:700
-}
-.picker-card-wrap.will-take .take-label{opacity:1}
 .picker-card-wrap.will-take .card{border-color:var(--hit);box-shadow:0 0 14px var(--hit-glow)}
+.picker-btns{display:flex;gap:10px;margin-top:16px;width:100%;max-width:320px}
+#picker-take-btn{flex:1;background:var(--hit);color:#000;font-weight:700;opacity:.4;pointer-events:none}
+#picker-take-btn.active{opacity:1;pointer-events:auto}
+#picker-cancel{flex:1}
 
 /* ── TAKE-FROM-PILE BUTTON ── */
 #take-btn{
@@ -755,9 +753,12 @@ body.shake{animation:shake .28s var(--ease-out)}
 <!-- PICKER -->
 <div id="picker-ov" class="picker-ov" style="display:none">
   <div class="ptitle">Take from Discard Pile</div>
-  <div class="psub">Tap any card — you'll take it<br>and every card above it (newer).</div>
+  <div class="psub">Select a card to take it and all newer cards.</div>
   <div class="picker-pile" id="picker-cards"></div>
-  <button class="btn" id="picker-cancel" style="margin-top:18px">Cancel</button>
+  <div class="picker-btns">
+    <button class="btn" id="picker-take-btn">Take Cards</button>
+    <button class="btn" id="picker-cancel">Cancel</button>
+  </div>
 </div>
 
 <!-- ROUND OVER -->
@@ -1491,23 +1492,34 @@ async function drawCard(){
   await dbUp({deck,[myKey()]:[...myHand(),drawn],drawnThisTurn:true});
 }
 
+let pickerSelIdx=-1;
 function openPicker(){
   if(!isMine())return st('Not your turn.','err');
   if(gs.drawnThisTurn===true)return st('Already drew this turn.','err');
   const dp=gs.discardPile||[];if(!dp.length)return st('Pile is empty.','err');
-  buildPickerUI(dp,-1);$('picker-ov').style.display='flex';
+  pickerSelIdx=-1;
+  buildPickerUI(dp);
+  $('picker-take-btn').textContent='Take Cards';
+  $('picker-take-btn').classList.remove('active');
+  $('picker-ov').style.display='flex';
 }
-function buildPickerUI(dp,hoverIdx){
+function buildPickerUI(dp){
   const cont=$('picker-cards');cont.innerHTML='';
   dp.forEach((c,i)=>{
-    const willTake=hoverIdx>=0&&i>=hoverIdx;
-    const wrap=document.createElement('div');wrap.className='picker-card-wrap'+(willTake?' will-take':'');
-    const lbl=document.createElement('div');lbl.className='take-label';lbl.textContent='TAKE';
+    const wrap=document.createElement('div');
+    wrap.className='picker-card-wrap'+(pickerSelIdx>=0&&i>=pickerSelIdx?' will-take':'');
     const el=mkCard(c);
-    wrap.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch')buildPickerUI(dp,i);});
-    wrap.addEventListener('click',()=>takePile(i));
-    wrap.addEventListener('touchend',e=>{e.preventDefault();takePile(i);});
-    wrap.appendChild(el);wrap.appendChild(lbl);cont.appendChild(wrap);
+    wrap.appendChild(el);
+    cont.appendChild(wrap);
+    function selectCard(){
+      pickerSelIdx=i;
+      const count=dp.length-i;
+      $('picker-take-btn').textContent='Take '+(count===1?'1 Card':count+' Cards');
+      $('picker-take-btn').classList.add('active');
+      buildPickerUI(dp);
+    }
+    wrap.addEventListener('click',selectCard);
+    wrap.addEventListener('touchend',e=>{e.preventDefault();selectCard();});
   });
 }
 async function takePile(fromIdx){
@@ -1729,7 +1741,10 @@ $('draw-btn').addEventListener('click',drawCard);
 $('draw-btn').addEventListener('touchend',e=>{e.preventDefault();drawCard();});
 $('take-btn').addEventListener('click',openPicker);
 $('take-btn').addEventListener('touchend',e=>{e.preventDefault();if(!$('take-btn').disabled)openPicker();});
-$('picker-cancel').addEventListener('click',()=>$('picker-ov').style.display='none');
+$('picker-take-btn').addEventListener('click',()=>{if(pickerSelIdx>=0)takePile(pickerSelIdx);});
+$('picker-take-btn').addEventListener('touchend',e=>{e.preventDefault();if(pickerSelIdx>=0)takePile(pickerSelIdx);});
+$('picker-cancel').addEventListener('click',()=>{pickerSelIdx=-1;$('picker-ov').style.display='none';});
+$('picker-cancel').addEventListener('touchend',e=>{e.preventDefault();pickerSelIdx=-1;$('picker-ov').style.display='none';});
 $('btn-meld').addEventListener('click',layMeld);
 $('btn-add').addEventListener('click',addToMeld);
 $('btn-disc').addEventListener('click',discardCard);
