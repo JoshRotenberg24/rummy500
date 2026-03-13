@@ -1504,8 +1504,9 @@ function buildPickerUI(dp,hoverIdx){
     const wrap=document.createElement('div');wrap.className='picker-card-wrap'+(willTake?' will-take':'');
     const lbl=document.createElement('div');lbl.className='take-label';lbl.textContent='TAKE';
     const el=mkCard(c);
-    wrap.addEventListener('pointerenter',()=>buildPickerUI(dp,i));
+    wrap.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch')buildPickerUI(dp,i);});
     wrap.addEventListener('click',()=>takePile(i));
+    wrap.addEventListener('touchend',e=>{e.preventDefault();takePile(i);});
     wrap.appendChild(el);wrap.appendChild(lbl);cont.appendChild(wrap);
   });
 }
