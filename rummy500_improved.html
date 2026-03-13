@@ -603,7 +603,7 @@ body.shake{animation:shake .28s var(--ease-out)}
 }
 .ptitle{font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:2px;text-align:center}
 .psub{font-style:italic;color:var(--text-muted);font-size:.7rem;text-align:center;margin-bottom:14px;line-height:1.6}
-.picker-pile{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:360px;max-height:56vh;overflow-y:auto}
+.picker-pile{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:360px;max-height:56vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .picker-card-wrap{
   display:flex;flex-direction:column;align-items:center;gap:3px;
   cursor:pointer;transition:transform .16s var(--spring)
@@ -1505,8 +1505,23 @@ function buildPickerUI(dp,hoverIdx){
     const wrap=document.createElement('div');wrap.className='picker-card-wrap'+(willTake?' will-take':'');
     const lbl=document.createElement('div');lbl.className='take-label';lbl.textContent='TAKE';
     const el=mkCard(c);
-    wrap.addEventListener('pointerenter',()=>buildPickerUI(dp,i));
-    wrap.addEventListener('click',()=>takePile(i));
+    // iOS Safari: use touchstart so scroll container doesn't swallow the event
+    let tapped=false;
+    wrap.addEventListener('touchstart',function(e){
+      tapped=true;
+      e.stopPropagation();
+    },{passive:true});
+    wrap.addEventListener('touchend',function(e){
+      if(!tapped)return;
+      tapped=false;
+      e.preventDefault();
+      e.stopPropagation();
+      takePile(i);
+    });
+    wrap.addEventListener('click',function(e){
+      // fallback for desktop
+      takePile(i);
+    });
     wrap.appendChild(el);wrap.appendChild(lbl);cont.appendChild(wrap);
   });
 }
