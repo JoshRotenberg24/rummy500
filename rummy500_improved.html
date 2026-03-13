@@ -610,6 +610,7 @@ body.shake{animation:shake .28s var(--ease-out)}
 }
 .picker-card-wrap:hover{transform:translateY(-3px)}
 .picker-card-wrap:active{transform:scale(.95)}
+.picker-card-wrap *{pointer-events:none}
 .picker-card-wrap .take-label{
   font-size:.5rem;color:var(--hit);letter-spacing:1px;
   opacity:0;transition:opacity .15s;font-family:'Playfair Display',serif;font-weight:700
@@ -1500,27 +1501,14 @@ function openPicker(){
 function buildPickerUI(dp,hoverIdx){
   const cont=$('picker-cards');cont.innerHTML='';
   dp.forEach((c,i)=>{
-    const wrap=document.createElement('div');
-    wrap.className='picker-card-wrap';
-    wrap.dataset.idx=i;
+    const willTake=hoverIdx>=0&&i>=hoverIdx;
+    const wrap=document.createElement('div');wrap.className='picker-card-wrap'+(willTake?' will-take':'');
     const lbl=document.createElement('div');lbl.className='take-label';lbl.textContent='TAKE';
     const el=mkCard(c);
-    // Pass pointer events through inner elements so the wrap div always gets the tap
-    el.style.pointerEvents='none';
+    wrap.addEventListener('pointerenter',()=>buildPickerUI(dp,i));
+    wrap.addEventListener('click',()=>takePile(i));
     wrap.appendChild(el);wrap.appendChild(lbl);cont.appendChild(wrap);
   });
-  // Single delegated listener on container - works reliably on mobile
-  cont.ontouchend=function(e){
-    e.preventDefault();
-    const wrap=e.target.closest('.picker-card-wrap');
-    if(!wrap)return;
-    takePile(parseInt(wrap.dataset.idx,10));
-  };
-  cont.onclick=function(e){
-    const wrap=e.target.closest('.picker-card-wrap');
-    if(!wrap)return;
-    takePile(parseInt(wrap.dataset.idx,10));
-  };
 }
 async function takePile(fromIdx){
   $('picker-ov').style.display='none';
