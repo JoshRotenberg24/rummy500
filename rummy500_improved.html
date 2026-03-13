@@ -1500,23 +1500,27 @@ function openPicker(){
 function buildPickerUI(dp,hoverIdx){
   const cont=$('picker-cards');cont.innerHTML='';
   dp.forEach((c,i)=>{
-    const wrap=document.createElement('div');wrap.className='picker-card-wrap';
+    const wrap=document.createElement('div');
+    wrap.className='picker-card-wrap';
+    wrap.dataset.idx=i;
     const lbl=document.createElement('div');lbl.className='take-label';lbl.textContent='TAKE';
     const el=mkCard(c);
-    // Highlight this card and all newer cards on hover (desktop)
-    wrap.addEventListener('pointerenter',()=>{
-      cont.querySelectorAll('.picker-card-wrap').forEach((w,j)=>{
-        w.classList.toggle('will-take',j>=i);
-      });
-    });
-    wrap.addEventListener('pointerleave',()=>{
-      cont.querySelectorAll('.picker-card-wrap').forEach(w=>w.classList.remove('will-take'));
-    });
-    // Use touchend for mobile so the DOM isn't rebuilt before click fires
-    wrap.addEventListener('touchend',(e)=>{e.preventDefault();takePile(i);});
-    wrap.addEventListener('click',()=>takePile(i));
+    // Pass pointer events through inner elements so the wrap div always gets the tap
+    el.style.pointerEvents='none';
     wrap.appendChild(el);wrap.appendChild(lbl);cont.appendChild(wrap);
   });
+  // Single delegated listener on container - works reliably on mobile
+  cont.ontouchend=function(e){
+    e.preventDefault();
+    const wrap=e.target.closest('.picker-card-wrap');
+    if(!wrap)return;
+    takePile(parseInt(wrap.dataset.idx,10));
+  };
+  cont.onclick=function(e){
+    const wrap=e.target.closest('.picker-card-wrap');
+    if(!wrap)return;
+    takePile(parseInt(wrap.dataset.idx,10));
+  };
 }
 async function takePile(fromIdx){
   $('picker-ov').style.display='none';
