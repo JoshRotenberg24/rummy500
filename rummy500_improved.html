@@ -1500,11 +1500,20 @@ function openPicker(){
 function buildPickerUI(dp,hoverIdx){
   const cont=$('picker-cards');cont.innerHTML='';
   dp.forEach((c,i)=>{
-    const willTake=hoverIdx>=0&&i>=hoverIdx;
-    const wrap=document.createElement('div');wrap.className='picker-card-wrap'+(willTake?' will-take':'');
+    const wrap=document.createElement('div');wrap.className='picker-card-wrap';
     const lbl=document.createElement('div');lbl.className='take-label';lbl.textContent='TAKE';
     const el=mkCard(c);
-    wrap.addEventListener('pointerenter',()=>buildPickerUI(dp,i));
+    // Highlight this card and all newer cards on hover (desktop)
+    wrap.addEventListener('pointerenter',()=>{
+      cont.querySelectorAll('.picker-card-wrap').forEach((w,j)=>{
+        w.classList.toggle('will-take',j>=i);
+      });
+    });
+    wrap.addEventListener('pointerleave',()=>{
+      cont.querySelectorAll('.picker-card-wrap').forEach(w=>w.classList.remove('will-take'));
+    });
+    // Use touchend for mobile so the DOM isn't rebuilt before click fires
+    wrap.addEventListener('touchend',(e)=>{e.preventDefault();takePile(i);});
     wrap.addEventListener('click',()=>takePile(i));
     wrap.appendChild(el);wrap.appendChild(lbl);cont.appendChild(wrap);
   });
