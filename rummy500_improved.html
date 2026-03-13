@@ -759,7 +759,7 @@ body.shake{animation:shake .28s var(--ease-out)}
   <div class="picker-pile" id="picker-cards"></div>
   <div style="display:flex;gap:10px;margin-top:18px">
     <button class="btn" id="picker-cancel">Cancel</button>
-    <button class="btn primary" id="picker-confirm" disabled>Pick Up</button>
+    <button class="btn primary" id="picker-confirm" disabled>Take Card</button>
   </div>
 </div>
 
@@ -1516,11 +1516,12 @@ function buildPickerUI(dp){
     // Use a named function so we can attach cleanly
     function selectCard(){
       pickerFromIdx=i;
-      // Highlight this card and all newer (higher index) cards
+      const taking=dp.length-i;
       cont.querySelectorAll('.picker-card-wrap').forEach((w,j)=>{
         w.classList.toggle('will-take', j>=i);
       });
       confirm.disabled=false;
+      confirm.textContent=taking===1?'Take Card':'Take Cards';
     }
     wrap.addEventListener('click', selectCard);
     wrap.addEventListener('touchend', function(e){
