@@ -388,23 +388,23 @@ body.shake{animation:shake .28s var(--ease-out)}
    CARDS
    ═══════════════════════════════════ */
 .card{
-  width:clamp(36px,calc((100vw - 80px) / 8),52px);
-  height:calc(clamp(36px,calc((100vw - 80px) / 8),52px) * 1.44);
-  background:linear-gradient(160deg,#fffef8 0%,#fdf8ee 100%);
-  border:1.5px solid #c8bfa8;border-radius:var(--r-sm);
+  width:clamp(42px,calc((100vw - 80px) / 8),58px);
+  height:calc(clamp(42px,calc((100vw - 80px) / 8),58px) * 1.5);
+  background:#ffffff;
+  border:2px solid #d0c8b8;border-radius:6px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  font-family:'Playfair Display',serif;font-weight:700;cursor:pointer;
+  font-family:'Playfair Display',serif;font-weight:900;cursor:pointer;
   transition:transform .18s var(--spring),box-shadow .18s var(--ease-out),border-color .15s var(--ease-out);
   position:relative;flex-shrink:0;user-select:none;
-  box-shadow:1px 2px 6px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.7) inset;
+  box-shadow:0 3px 10px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.9) inset;
   line-height:1
 }
 .card::after{
-  content:'';position:absolute;inset:0;border-radius:calc(var(--r-sm) - 1px);pointer-events:none;
-  background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,transparent 50%);
+  content:'';position:absolute;inset:0;border-radius:5px;pointer-events:none;
+  background:linear-gradient(160deg,rgba(255,255,255,.6) 0%,transparent 55%);
 }
-.card:hover:not(.sel):not(.valid-sel){transform:translateY(-4px);box-shadow:2px 8px 18px rgba(0,0,0,.45)}
-.card.red{color:var(--red)}.card.blk{color:var(--blk)}
+.card:hover:not(.sel):not(.valid-sel){transform:translateY(-4px);box-shadow:0 6px 20px rgba(0,0,0,.55)}
+.card.red{color:#cc1111}.card.blk{color:#111111}
 .card.sel{
   transform:translateY(-16px);
   box-shadow:0 12px 30px rgba(201,168,76,.5);
@@ -417,8 +417,21 @@ body.shake{animation:shake .28s var(--ease-out)}
 }
 .card:active{transform:scale(.93)}
 .card.sel:active,.card.valid-sel:active{transform:translateY(-16px) scale(.93)}
-.card .suit{font-size:clamp(1rem,2.8vw,1.5rem)}
-.card .rank{font-size:clamp(.85rem,2.4vw,1.2rem);position:absolute;top:3px;left:5px;font-weight:900}
+.card .suit{
+  font-size:clamp(1.3rem,3.5vw,1.9rem);
+  line-height:1;margin-top:2px
+}
+.card .rank{
+  position:absolute;top:3px;left:5px;
+  font-size:clamp(1rem,2.8vw,1.4rem);
+  font-weight:900;line-height:1;letter-spacing:-1px
+}
+.card .rank-br{
+  position:absolute;bottom:3px;right:5px;
+  font-size:clamp(1rem,2.8vw,1.4rem);
+  font-weight:900;line-height:1;letter-spacing:-1px;
+  transform:rotate(180deg)
+}
 
 /* Animations */
 .card.deal{animation:dealIn .32s var(--spring) both}
@@ -476,12 +489,12 @@ body.shake{animation:shake .28s var(--ease-out)}
 }
 
 /* Card sizes */
-.card-sm{width:34px;height:50px}
-.card-sm .rank{font-size:.72rem;top:2px;left:3px;font-weight:900}
-.card-sm .suit{font-size:1rem}
-.card-xs{width:26px;height:38px}
-.card-xs .rank{font-size:.58rem;top:1px;left:2px;font-weight:900}
-.card-xs .suit{font-size:.78rem}
+.card-sm{width:38px;height:56px}
+.card-sm .rank{font-size:.85rem;top:2px;left:3px;font-weight:900}
+.card-sm .suit{font-size:1.1rem}
+.card-xs{width:28px;height:40px}
+.card-xs .rank{font-size:.62rem;top:1px;left:2px;font-weight:900}
+.card-xs .suit{font-size:.8rem}
 
 /* Draw pile face */
 .dpile-face{
@@ -542,7 +555,7 @@ body.shake{animation:shake .28s var(--ease-out)}
 .btn:active{background:rgba(201,168,76,.16);transform:scale(.94)}
 .btn:disabled{
   border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.22);
-  cursor:not-allowed;opacity:1;transform:none
+  cursor:not-allowed;opacity:1;pointer-events:none;transform:none
 }
 .btn.primary{background:rgba(201,168,76,.12);border-color:var(--gold-l)}
 .btn.danger{border-color:rgba(231,76,60,.45);color:var(--err)}
@@ -622,6 +635,16 @@ body.shake{animation:shake .28s var(--ease-out)}
   font-size:.58rem;padding:6px 10px;margin-top:5px;
   min-height:36px;transition:all .2s var(--spring)
 }
+/* Picker row buttons */
+.picker-row-btn{
+  width:100%;display:flex;flex-direction:column;align-items:flex-start;
+  padding:12px 16px;min-height:52px;border-radius:8px;
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(201,168,76,.3);
+  text-align:left;gap:2px
+}
+.picker-row-btn:active{background:rgba(201,168,76,.15);}
+.prb-count{font-size:.85rem;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;}
+.prb-from{font-size:.65rem;color:var(--text-muted);font-style:italic;}
 
 /* ═══════════════════════════════════
    LANDSCAPE
@@ -755,12 +778,9 @@ body.shake{animation:shake .28s var(--ease-out)}
 <!-- PICKER -->
 <div id="picker-ov" class="picker-ov" style="display:none">
   <div class="ptitle">Take from Discard Pile</div>
-  <div class="psub">Tap the oldest card you want — it and everything above it will be selected.</div>
-  <div class="picker-pile" id="picker-cards"></div>
-  <div style="display:flex;gap:10px;margin-top:18px">
-    <button class="btn" id="picker-cancel">Cancel</button>
-    <button class="btn primary" id="picker-confirm" disabled>Take Card</button>
-  </div>
+  <div class="psub">Choose how many cards to pick up.</div>
+  <div id="picker-list" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;max-height:60vh;overflow-y:auto;margin:12px 0"></div>
+  <button class="btn" id="picker-cancel" style="margin-top:6px">Cancel</button>
 </div>
 
 <!-- ROUND OVER -->
@@ -1174,7 +1194,12 @@ function mkCard(c,small=false,animate=false,size=''){
   const el=document.createElement('div');
   const sz=size==='xs'?' card-xs':small?' card-sm':'';
   el.className=`card${sz} ${isRed(c)?'red':'blk'}${animate?' popin':''}`;
-  el.innerHTML=`<span class="rank">${c.rank}</span><span class="suit">${c.suit}</span>`;
+  // Full cards get top-left rank + big center suit + bottom-right mirrored rank
+  if(!small&&size!=='xs'){
+    el.innerHTML=`<span class="rank">${c.rank}</span><span class="suit">${c.suit}</span><span class="rank-br">${c.rank}</span>`;
+  } else {
+    el.innerHTML=`<span class="rank">${c.rank}</span><span class="suit">${c.suit}</span>`;
+  }
   return el;
 }
 
@@ -1494,47 +1519,32 @@ async function drawCard(){
   await dbUp({deck,[myKey()]:[...myHand(),drawn],drawnThisTurn:true});
 }
 
-let pickerFromIdx=-1;
 function openPicker(){
   if(!isMine())return st('Not your turn.','err');
   if(gs.drawnThisTurn===true)return st('Already drew this turn.','err');
   const dp=gs.discardPile||[];if(!dp.length)return st('Pile is empty.','err');
-  pickerFromIdx=-1;
   buildPickerUI(dp);
   $('picker-ov').style.display='flex';
 }
 function buildPickerUI(dp){
-  const cont=$('picker-cards');cont.innerHTML='';
-  const confirm=$('picker-confirm');
-  confirm.setAttribute('disabled','');
+  const list=document.getElementById('picker-list');
+  list.innerHTML='';
+  // Show one button per possible starting card (oldest to newest)
+  // Each button = "Take X card(s)" — tapping it immediately calls takePile
   dp.forEach((c,i)=>{
-    const wrap=document.createElement('div');
-    wrap.className='picker-card-wrap';
-    const lbl=document.createElement('div');lbl.className='take-label';lbl.textContent='TAKE';
-    const el=mkCard(c);
-    wrap.appendChild(el);wrap.appendChild(lbl);cont.appendChild(wrap);
-    // Use a named function so we can attach cleanly
-    function selectCard(){
-      pickerFromIdx=i;
-      const taking=dp.length-i;
-      cont.querySelectorAll('.picker-card-wrap').forEach((w,j)=>{
-        w.classList.toggle('will-take', j>=i);
-      });
-      confirm.removeAttribute('disabled');
-      confirm.textContent=taking===1?'Take Card':'Take Cards';
-      // Force reflow so iOS Safari re-enables touch on the button
-      void confirm.offsetHeight;
-    }
-    wrap.addEventListener('click', selectCard);
-    wrap.addEventListener('touchend', function(e){
-      e.preventDefault();
-      selectCard();
-    });
+    const count=dp.length-i;
+    const btn=document.createElement('button');
+    btn.className='btn picker-row-btn';
+    const suitLabel=c.suit+' '+c.rank;
+    btn.innerHTML=
+      '<span class="prb-count">'+(count===1?'Take 1 card':'Take '+count+' cards')+'</span>'+
+      '<span class="prb-from">from '+suitLabel+(count>1?' &amp; '+( count-1)+' newer':'' )+'</span>';
+    btn.onclick=function(){takePile(i);};
+    list.appendChild(btn);
   });
 }
 async function takePile(fromIdx){
   $('picker-ov').style.display='none';
-  pickerFromIdx=-1;
   const dp=[...(gs.discardPile||[])];
   const taken=dp.splice(fromIdx);
   vibrate(taken.length>3?[30,20,30]:30);
@@ -1750,8 +1760,7 @@ $('btn-p2').addEventListener('click',()=>joinAs(2));
 $('btn-reset').addEventListener('click',resetGame);
 $('draw-btn').addEventListener('click',drawCard);
 $('take-btn').addEventListener('click',openPicker);
-$('picker-cancel').addEventListener('click',()=>{$('picker-ov').style.display='none';pickerFromIdx=-1;});
-$('picker-confirm').addEventListener('click',()=>{if(pickerFromIdx>=0)takePile(pickerFromIdx);});
+$('picker-cancel').addEventListener('click',()=>{$('picker-ov').style.display='none';});
 $('btn-meld').addEventListener('click',layMeld);
 $('btn-add').addEventListener('click',addToMeld);
 $('btn-disc').addEventListener('click',discardCard);
