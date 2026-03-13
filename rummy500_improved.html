@@ -603,14 +603,13 @@ body.shake{animation:shake .28s var(--ease-out)}
 }
 .ptitle{font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:2px;text-align:center}
 .psub{font-style:italic;color:var(--text-muted);font-size:.7rem;text-align:center;margin-bottom:14px;line-height:1.6}
-.picker-pile{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:360px;max-height:56vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.picker-pile{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:360px;max-height:56vh;overflow-y:auto}
 .picker-card-wrap{
   display:flex;flex-direction:column;align-items:center;gap:3px;
   cursor:pointer;transition:transform .16s var(--spring)
 }
 .picker-card-wrap:hover{transform:translateY(-3px)}
 .picker-card-wrap:active{transform:scale(.95)}
-.picker-card-wrap *{pointer-events:none}
 .picker-card-wrap .take-label{
   font-size:.5rem;color:var(--hit);letter-spacing:1px;
   opacity:0;transition:opacity .15s;font-family:'Playfair Display',serif;font-weight:700
@@ -756,9 +755,12 @@ body.shake{animation:shake .28s var(--ease-out)}
 <!-- PICKER -->
 <div id="picker-ov" class="picker-ov" style="display:none">
   <div class="ptitle">Take from Discard Pile</div>
-  <div class="psub">Tap any card — you'll take it<br>and every card above it (newer).</div>
+  <div class="psub">Tap the oldest card you want — it and everything above it will be selected.</div>
   <div class="picker-pile" id="picker-cards"></div>
-  <button class="btn" id="picker-cancel" style="margin-top:18px">Cancel</button>
+  <div style="display:flex;gap:10px;margin-top:18px">
+    <button class="btn" id="picker-cancel">Cancel</button>
+    <button class="btn primary" id="picker-confirm" disabled>Pick Up</button>
+  </div>
 </div>
 
 <!-- ROUND OVER -->
@@ -1492,41 +1494,44 @@ async function drawCard(){
   await dbUp({deck,[myKey()]:[...myHand(),drawn],drawnThisTurn:true});
 }
 
+let pickerFromIdx=-1;
 function openPicker(){
   if(!isMine())return st('Not your turn.','err');
   if(gs.drawnThisTurn===true)return st('Already drew this turn.','err');
   const dp=gs.discardPile||[];if(!dp.length)return st('Pile is empty.','err');
-  buildPickerUI(dp,-1);$('picker-ov').style.display='flex';
+  pickerFromIdx=-1;
+  buildPickerUI(dp);
+  $('picker-ov').style.display='flex';
 }
-function buildPickerUI(dp,hoverIdx){
+function buildPickerUI(dp){
   const cont=$('picker-cards');cont.innerHTML='';
+  const confirm=$('picker-confirm');
+  confirm.disabled=true;
   dp.forEach((c,i)=>{
-    const willTake=hoverIdx>=0&&i>=hoverIdx;
-    const wrap=document.createElement('div');wrap.className='picker-card-wrap'+(willTake?' will-take':'');
+    const wrap=document.createElement('div');
+    wrap.className='picker-card-wrap';
     const lbl=document.createElement('div');lbl.className='take-label';lbl.textContent='TAKE';
     const el=mkCard(c);
-    // iOS Safari: use touchstart so scroll container doesn't swallow the event
-    let tapped=false;
-    wrap.addEventListener('touchstart',function(e){
-      tapped=true;
-      e.stopPropagation();
-    },{passive:true});
-    wrap.addEventListener('touchend',function(e){
-      if(!tapped)return;
-      tapped=false;
-      e.preventDefault();
-      e.stopPropagation();
-      takePile(i);
-    });
-    wrap.addEventListener('click',function(e){
-      // fallback for desktop
-      takePile(i);
-    });
     wrap.appendChild(el);wrap.appendChild(lbl);cont.appendChild(wrap);
+    // Use a named function so we can attach cleanly
+    function selectCard(){
+      pickerFromIdx=i;
+      // Highlight this card and all newer (higher index) cards
+      cont.querySelectorAll('.picker-card-wrap').forEach((w,j)=>{
+        w.classList.toggle('will-take', j>=i);
+      });
+      confirm.disabled=false;
+    }
+    wrap.addEventListener('click', selectCard);
+    wrap.addEventListener('touchend', function(e){
+      e.preventDefault();
+      selectCard();
+    });
   });
 }
 async function takePile(fromIdx){
   $('picker-ov').style.display='none';
+  pickerFromIdx=-1;
   const dp=[...(gs.discardPile||[])];
   const taken=dp.splice(fromIdx);
   vibrate(taken.length>3?[30,20,30]:30);
@@ -1742,7 +1747,8 @@ $('btn-p2').addEventListener('click',()=>joinAs(2));
 $('btn-reset').addEventListener('click',resetGame);
 $('draw-btn').addEventListener('click',drawCard);
 $('take-btn').addEventListener('click',openPicker);
-$('picker-cancel').addEventListener('click',()=>$('picker-ov').style.display='none');
+$('picker-cancel').addEventListener('click',()=>{$('picker-ov').style.display='none';pickerFromIdx=-1;});
+$('picker-confirm').addEventListener('click',()=>{if(pickerFromIdx>=0)takePile(pickerFromIdx);});
 $('btn-meld').addEventListener('click',layMeld);
 $('btn-add').addEventListener('click',addToMeld);
 $('btn-disc').addEventListener('click',discardCard);
